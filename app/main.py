@@ -70,7 +70,7 @@ async def price_history(_id: str, timeframe: str = "year"):
         result = await database.fetch_all(query=query, values={"timeframe": timeframe, "id": _id})
     except asyncpg.exceptions.InvalidParameterValueError:
         error_message = f"timestamp '{timeframe}' is not a valid parameter"
-        raise HTTPException(status_code=404, detail=error_message)
+        raise HTTPException(status_code=400, detail=error_message)
     else:
         if not result:
             raise HTTPException(status_code=404, detail="Item not found")

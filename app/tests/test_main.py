@@ -74,6 +74,6 @@ def test_price_history_invalid_time(app_client):
 
     response = app_client.get(f"/phones/{_id}/price_history?timeframe=invalid")
 
-    assert response.status_code == 404
+    assert response.status_code == 400
 
     assert response.json() == {"detail": "timestamp 'invalid' is not a valid parameter"}

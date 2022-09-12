@@ -1,0 +1,10 @@
+.git
+.vscode
+.gitignore
+README.md
+**/__pycache__/
+Dockerfile
+*.py[cod]
+*$py.class
+venv/
+.idea/

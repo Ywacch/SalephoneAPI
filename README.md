@@ -1,6 +1,7 @@
 # SalephoneAPI
 API for smartphone market data
 
+
 Warning: some tests may fail due to differences in test and production database (being fixed)
 
 Application requires the following environment variables for database functionality. These can be set directly in the 

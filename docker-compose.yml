@@ -1,0 +1,11 @@
+version: '3'
+services:
+  api:
+    build: .
+    ports:
+      - "8000:80"
+    environment:
+      - salephone_user=
+      - salephone_pw=
+      - salephone_dbname=
+      - postgres_host_ip=

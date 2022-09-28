@@ -9,4 +9,4 @@ Application requires the following environment variables for database functional
 - POSTGRES_PASSWORD: database password
 - db_host: name of the postgres container ```db```
 - salephone_dbname: database name
-Passing the environment var file to docker compose via the command ```docker compose --env-file .env up -d``
+Passing the environment var file to docker compose via the command ```docker compose --env-file .env up -d```

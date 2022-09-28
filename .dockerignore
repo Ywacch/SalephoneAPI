@@ -8,3 +8,4 @@ Dockerfile
 *$py.class
 venv/
 .idea/
+.env

@@ -12,6 +12,10 @@ Application requires the following environment variables for database functional
 - http_user: username for dashboard access
 - http_pass: password for dashboard access
 - api_route: name of url for api to route
-Passing the environment var file to docker compose via the command ```docker compose --env-file .env up -d```
+Passing the environment var file to docker compose ia vthe command ```docker compose --env-file .env up -d```
 
 In ```traefik.toml``` (near the bottom) enter your email in the email field
+
+In ```db_scripts``` create a file called ```subcription.sql``` which creates the subscription to the master databased
+
+run ```docker compose --env-file .env up -d```

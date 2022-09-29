@@ -9,3 +9,4 @@ Dockerfile
 venv/
 .idea/
 .env
+.pytest_cache/

@@ -49,7 +49,7 @@ async def phone_models(brand: str, series: str):
     phones = await database.fetch_all(
         query=smartphones.select().filter(func.lower(smartphones.c.brand) == brand.lower())
         .filter(func.lower(smartphones.c.series) == series.lower())
-        .with_only_columns([smartphones.c.model]).distinct())
+        .with_only_columns([smartphones.c.name]).distinct())
     return phones
 
 

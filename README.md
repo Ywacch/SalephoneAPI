@@ -19,4 +19,3 @@ Application requires the following environment variables for database functional
 - salephone_pw: database password
 - salephone_host: database host (default is 'localhost')
 - salephone_dbname: database name
->>>>>>> d226f4c04df860ecce2e40e5b60849cbdbd9f422

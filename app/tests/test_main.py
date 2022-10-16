@@ -77,3 +77,11 @@ def test_price_history_invalid_time(app_client):
     assert response.status_code == 400
 
     assert response.json() == {"detail": "timestamp 'invalid' is not a valid parameter"}
+
+
+def test_phone_brands(app_client):
+    pass
+
+
+def test_phone_series(app_client):
+    pass

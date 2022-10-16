@@ -1,6 +1,7 @@
 import asyncpg.exceptions
 from fastapi import FastAPI, HTTPException
 from typing import Union
+from sqlalchemy import func
 
 from app.database.db import database
 from app.database.db import tables
@@ -26,6 +27,29 @@ async def all_phones(detailed: Union[bool, None] = None):
     else:
         phones = await database.fetch_all(query=smartphones.select()
                                           .with_only_columns([smartphones.c.phone_id, smartphones.c.phone_name]))
+    return phones
+
+
+@app.get("/phones/brands")
+async def phone_brands():
+    phones = await database.fetch_all(query=smartphones.select()
+                                      .with_only_columns([smartphones.c.brand]).distinct())
+    return phones
+
+
+@app.get("/phones/series")
+async def phone_series(brand: str):
+    phones = await database.fetch_all(query=smartphones.select().filter(func.lower(smartphones.c.brand) == brand.lower())
+                                      .with_only_columns([smartphones.c.series]).distinct())
+    return phones
+
+
+@app.get("/phones/models")
+async def phone_models(brand: str, series: str):
+    phones = await database.fetch_all(
+        query=smartphones.select().filter(func.lower(smartphones.c.brand) == brand.lower())
+        .filter(func.lower(smartphones.c.series) == series.lower())
+        .with_only_columns([smartphones.c.model]).distinct())
     return phones
 
 

@@ -37,16 +37,21 @@ async def phone_brands():
     return phones
 
 
-@app.get("/phones/brands/{brand}")
+@app.get("/phones/series")
 async def phone_series(brand: str):
     phones = await database.fetch_all(query=smartphones.select().filter(func.lower(smartphones.c.brand) == brand.lower())
                                       .with_only_columns([smartphones.c.series]).distinct())
     return phones
 
 
-@app.get("/phones/brands/{se}")
-async def phone_models():
-    pass
+@app.get("/phones/models")
+async def phone_models(brand: str, series: str):
+    phones = await database.fetch_all(
+        query=smartphones.select().filter(func.lower(smartphones.c.brand) == brand.lower())
+        .filter(func.lower(smartphones.c.series) == series.lower())
+        .with_only_columns([smartphones.c.model]).distinct())
+    return phones
+
 
 @app.get("/phones/{_id}")
 async def phone_id(_id: str, detailed: Union[bool, None] = None):

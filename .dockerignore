@@ -8,3 +8,5 @@ Dockerfile
 *$py.class
 venv/
 .idea/
+.env
+.pytest_cache/

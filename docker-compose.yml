@@ -1,11 +1,55 @@
-version: '3'
+version: '3.8'
 services:
+  db:
+    image: postgres:14
+    restart: always
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${salephone_dbname}
+    expose:
+      - '5432:5432'
+    volumes: 
+      - postgres_data:/var/lib/postgresql/data/
+      - ./db_scripts/salephone.sql:/docker-entrypoint-initdb.d/create_tables.sql
+      - ./db_scripts/subscription.sql:/docker-entrypoint-initdb.d/create_tables.sql
+
   api:
     build: .
+    command: bash -c 'while !</dev/tcp/db/5432; do sleep 1; done; uvicorn app.main:app --host 0.0.0.0 --port 8000'
     ports:
-      - "8000:80"
+      - "8000:8000"
     environment:
-      - salephone_user=
-      - salephone_pw=
-      - salephone_dbname=
-      - postgres_host_ip=
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - salephone_dbname=${salephone_dbname}
+      - db_host=${db_host}
+    depends_on:
+      - db
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.fastapi.rule=Host(`salephone.works`)"
+      - "traefik.http.routers.fastapi.tls=true"
+      - "traefik.http.routers.fastapi.tls.certresolver=letsencrypt"
+  traefik: # new
+    build:
+      context: .
+      dockerfile: Dockerfile.traefik
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./traefik-public-certificates:/certificates"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.dashboard.rule=Host(`dashboard.salephone.works`) && (PathPrefix(`/`)"
+      - "traefik.http.routers.dashboard.tls=true"
+      - "traefik.http.routers.dashboard.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.dashboard.service=api@internal"
+      - "traefik.http.routers.dashboard.middlewares=auth"
+      - "traefik.http.middlewares.auth.basicauth.users=${http_user}:${http_pass}"
+
+volumes:
+  postgres_data:
+  traefik-public-certificates:

@@ -2,12 +2,11 @@ import os
 import databases
 from sqlalchemy import create_engine
 from app.database import tables
-import socket
 
 
-DATABASEURL = f"postgresql://{os.environ.get('salephone_user')}:{os.environ.get('salephone_pw')}@" \
-              f"{os.environ.get('postgres_host_ip')}/{os.environ.get('salephone_dbname')}"
-
+DATABASEURL = f"postgresql://{os.environ.get('POSTGRES_USER')}:{os.environ.get('POSTGRES_PASSWORD')}@" \
+              f"{os.environ.get('db_host')}/{os.environ.get('salephone_dbname')}"
+              
 database = databases.Database(DATABASEURL)
 
 engine = create_engine(DATABASEURL)

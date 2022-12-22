@@ -1,5 +1,6 @@
 import asyncpg.exceptions
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from typing import Union
 from sqlalchemy import func
 
@@ -7,6 +8,14 @@ from app.database.db import database
 from app.database.db import tables
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins='*',
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
+
 smartphones = tables.Smartphones.__table__
 
 
@@ -21,11 +30,25 @@ async def shutdown():
 
 
 @app.get("/phones/")
-async def all_phones(detailed: Union[bool, None] = None):
+async def all_phones(detailed: Union[bool, None] = None, brand: Union[str, None] = None, series: Union[str, None] = None):
+
+    query = smartphones.select
+    filters = []
+
+    if series and not brand:
+        error_message = f"'series' parameter requires a provided 'brand' parameter"
+        raise HTTPException(status_code=400, detail=error_message)
+
+    if brand:
+        filters.append(func.lower(smartphones.c.brand) == brand.lower())
+
+    if series:
+        filters.append(func.lower(smartphones.c.series) == series.lower())
+
     if detailed:
-        phones = await database.fetch_all(query=smartphones.select())
+        phones = await database.fetch_all(query=query().filter(*filters))
     else:
-        phones = await database.fetch_all(query=smartphones.select()
+        phones = await database.fetch_all(query=query().filter(*filters)
                                           .with_only_columns([smartphones.c.phone_id, smartphones.c.phone_name]))
     return phones
 
@@ -41,15 +64,6 @@ async def phone_brands():
 async def phone_series(brand: str):
     phones = await database.fetch_all(query=smartphones.select().filter(func.lower(smartphones.c.brand) == brand.lower())
                                       .with_only_columns([smartphones.c.series]).distinct())
-    return phones
-
-
-@app.get("/phones/models")
-async def phone_models(brand: str, series: str):
-    phones = await database.fetch_all(
-        query=smartphones.select().filter(func.lower(smartphones.c.brand) == brand.lower())
-        .filter(func.lower(smartphones.c.series) == series.lower())
-        .with_only_columns([smartphones.c.phone_name]).distinct())
     return phones
 
 

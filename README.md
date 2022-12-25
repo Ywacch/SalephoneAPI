@@ -17,6 +17,6 @@ Pass the environment var file to docker compose via the command ```docker compos
 
 In ```traefik.toml``` (near the bottom) enter your email in the email field
 
-In ```db_scripts/salepgone.sql```  add the `create subscription` code which creates the subscription to the master database
+In ```db_scripts/salephone.sql```  add the `create subscription` code which creates the subscription to the master database
 
 run ```docker compose --env-file .env up -d```

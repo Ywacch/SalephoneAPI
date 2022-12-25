@@ -12,7 +12,6 @@ services:
     volumes: 
       - postgres_data:/var/lib/postgresql/data/
       - ./db_scripts/salephone.sql:/docker-entrypoint-initdb.d/create_tables.sql
-      - ./db_scripts/subscription.sql:/docker-entrypoint-initdb.d/create_tables.sql
 
   api:
     build: .

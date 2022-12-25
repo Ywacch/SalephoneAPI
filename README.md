@@ -12,10 +12,11 @@ Application requires the following environment variables for database functional
 - http_user: username for dashboard access
 - http_pass: password for dashboard access
 - api_route: name of url for api to route
-Passing the environment var file to docker compose ia vthe command ```docker compose --env-file .env up -d```
+
+Pass the environment var file to docker compose via the command ```docker compose --env-file .env up -d```
 
 In ```traefik.toml``` (near the bottom) enter your email in the email field
 
-In ```db_scripts``` create a file called ```subcription.sql``` which creates the subscription to the master databased
+In ```db_scripts/salepgone.sql```  add the `create subscription` code which creates the subscription to the master database
 
 run ```docker compose --env-file .env up -d```

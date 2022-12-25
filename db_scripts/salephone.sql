@@ -20,18 +20,6 @@ SET default_tablespace = '';
 
 SET default_table_access_method = heap;
 
---
--- Name: ('phonelistings',); Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public."('phonelistings',)" (
-    phone_id character varying(32) NOT NULL,
-    item_id character varying(12) NOT NULL,
-    date_added date NOT NULL
-);
-
-
-ALTER TABLE public."('phonelistings',)" OWNER TO postgres;
 
 --
 -- Name: listings; Type: TABLE; Schema: public; Owner: postgres
@@ -92,12 +80,6 @@ CREATE TABLE public.smartphones (
 
 ALTER TABLE public.smartphones OWNER TO postgres;
 
---
--- Name: ('phonelistings',) ('phonelistings',)_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."('phonelistings',)"
-    ADD CONSTRAINT "('phonelistings',)_pkey" PRIMARY KEY (phone_id, item_id, date_added);
 
 
 --
@@ -124,21 +106,6 @@ ALTER TABLE ONLY public.smartphones
     ADD CONSTRAINT smartphones_pkey PRIMARY KEY (phone_id);
 
 
---
--- Name: ('phonelistings',) ('phonelistings',)_item_id_date_added_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."('phonelistings',)"
-    ADD CONSTRAINT "('phonelistings',)_item_id_date_added_fkey" FOREIGN KEY (item_id, date_added) REFERENCES public.listings(item_id, date_added);
-
-
---
--- Name: ('phonelistings',) ('phonelistings',)_phone_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public."('phonelistings',)"
-    ADD CONSTRAINT "('phonelistings',)_phone_id_fkey" FOREIGN KEY (phone_id) REFERENCES public.smartphones(phone_id);
-
 
 --
 -- Name: phonelistings phonelistings_item_id_date_added_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
@@ -159,4 +126,7 @@ ALTER TABLE ONLY public.phonelistings
 --
 -- PostgreSQL database dump complete
 --
+
+
+-- Postgres subscription creation goes here:
 

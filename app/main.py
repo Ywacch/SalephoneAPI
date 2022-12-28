@@ -57,14 +57,14 @@ async def all_phones(detailed: Union[bool, None] = None, brand: Union[str, None]
 async def phone_brands():
     phones = await database.fetch_all(query=smartphones.select()
                                       .with_only_columns([smartphones.c.brand]).distinct())
-    return phones
+    return {"brands": [brand['brand'] for brand in phones]}
 
 
 @app.get("/phones/series")
 async def phone_series(brand: str):
     phones = await database.fetch_all(query=smartphones.select().filter(func.lower(smartphones.c.brand) == brand.lower())
                                       .with_only_columns([smartphones.c.series]).distinct())
-    return phones
+    return {"series": [serie['series'] for serie in phones]}
 
 
 @app.get("/phones/{_id}")

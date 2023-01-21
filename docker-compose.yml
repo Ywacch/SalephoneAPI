@@ -27,6 +27,8 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - salephone_dbname=${salephone_dbname}
       - db_host=${db_host}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
     depends_on:
       - db
       - redis

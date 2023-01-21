@@ -3,9 +3,13 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Union
 from sqlalchemy import func
+import asyncio
+from app.log import fastapi_log, app_log
 
 from app.database.db import database
 from app.database.db import tables
+from app.cache.redis_cache import RedisCache
+
 
 app = FastAPI()
 
@@ -19,14 +23,35 @@ app.add_middleware(
 smartphones = tables.Smartphones.__table__
 
 
+async def start_scheduler():
+    """
+    Background task to update the cache every 24 hours
+    :return:
+    """
+
+    while True:
+        await asyncio.sleep(24*60*60)
+        app_log.info("Scheduled cache update.....")
+        asyncio.create_task(app.redis.update_cache(database))
+        app_log.info("Scheduled cache update Finished!")
+
+
 @app.on_event("startup")
 async def startup():
+    """
+    On startup, initialize the db connection and populate the cache with pre-computed price history
+    :return:
+    """
     await database.connect()
+    app.redis = RedisCache()
+    asyncio.create_task(app.redis.update_cache(database))
+    asyncio.create_task(start_scheduler())
 
 
 @app.on_event("shutdown")
 async def shutdown():
     await database.disconnect()
+    await app.redis.close_redis()
 
 
 @app.get("/phones/")
@@ -80,36 +105,32 @@ async def phone_id(_id: str, detailed: Union[bool, None] = None):
 
 
 @app.get("/phones/{_id}/price_history")
-async def price_history(_id: str, timeframe: str = "year"):
-    query = f"""select sub.phone_name,  date_trunc(:timeframe, converted_listings.date_added)as datetime, count(converted_listings) as sample_size,
-	        round(avg(converted_listings.price)::decimal, 1 ) as average, round(min(converted_listings.price)::decimal, 1 ) as cheapest, 
-	round(max(converted_listings.price)::decimal, 1 ) as costliest
-	from
-		(select *
-		from phonelistings
-		inner join smartphones on smartphones.phone_id=phonelistings.phone_id
-	 	where smartphones.phone_id = :id
-		) sub
-	inner join (select  item_id, title, date_added,
-		case
-		when currency = 'USD' then price * 1.28
-		when currency = 'EUR' then price * 1.36
-		when currency = 'AUD' then price * 0.91
-		when currency = 'GBP' then price * 1.61
-		when currency = 'CAD' then price
-		end as price 
-		from listings) as converted_listings
-		on converted_listings.item_id=sub.item_id
-		AND converted_listings.date_added=sub.date_added
-	group by datetime, sub.phone_name
-	order by datetime
-    ;"""
+async def price_history(_id: str, timeframe: str = "day"):
+    result = []
+    query = f"""select sub.phone_name,  date_trunc(:timeframe, converted_listings.date_added)as datetime, 
+            count(converted_listings) as sample_size, round(avg(converted_listings.price)::decimal, 1 ) as average, 
+            round(min(converted_listings.price)::decimal, 1 ) as cheapest, round(max(
+            converted_listings.price)::decimal, 1 ) as costliest from (select * from phonelistings inner join 
+            smartphones on smartphones.phone_id=phonelistings.phone_id where smartphones.phone_id = 
+            :id ) sub inner join (select  item_id, title, date_added, 
+            canadian_price_base as price from listings) as converted_listings on 
+            converted_listings.item_id=sub.item_id AND converted_listings.date_added=sub.date_added group by 
+            datetime, sub.phone_name order by datetime;"""
+
+    # Try to get the data from the cache, if it's not there look in the database
     try:
-        result = await database.fetch_all(query=query, values={"timeframe": timeframe, "id": _id})
-    except asyncpg.exceptions.InvalidParameterValueError:
-        error_message = f"timestamp '{timeframe}' is not a valid parameter"
-        raise HTTPException(status_code=400, detail=error_message)
+        result = await app.redis.get(_id)
+    except Exception as e:
+        fastapi_log.error(e)
     else:
         if not result:
-            raise HTTPException(status_code=404, detail="Item not found")
+            app_log("Caching failed, querying database ....")
+            try:
+                result = await database.fetch_all(query=query, values={"timeframe": timeframe, "id": _id})
+            except asyncpg.exceptions.InvalidParameterValueError:
+                error_message = f"timestamp '{timeframe}' is not a valid parameter"
+                raise HTTPException(status_code=400, detail=error_message)
+            else:
+                if not result:
+                    raise HTTPException(status_code=404, detail="Item not found")
     return result

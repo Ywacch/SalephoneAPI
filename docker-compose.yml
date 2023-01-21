@@ -9,10 +9,14 @@ services:
       - POSTGRES_DB=${salephone_dbname}
     expose:
       - '5432:5432'
-    volumes: 
+    volumes:
       - postgres_data:/var/lib/postgresql/data/
       - ./db_scripts/salephone.sql:/docker-entrypoint-initdb.d/create_tables.sql
-
+  redis:
+    image: redis
+    container_name: redis-cache
+    ports:
+      - "6379:6379"
   api:
     build: .
     command: bash -c 'while !</dev/tcp/db/5432; do sleep 1; done; uvicorn app.main:app --host 0.0.0.0 --port 8000'
@@ -25,6 +29,7 @@ services:
       - db_host=${db_host}
     depends_on:
       - db
+      - redis
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.fastapi.rule=Host(`salephone.works`)"

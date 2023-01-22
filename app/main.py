@@ -124,7 +124,7 @@ async def price_history(_id: str, timeframe: str = "day"):
         fastapi_log.error(e)
     else:
         if not result:
-            app_log("Caching failed, querying database ....")
+            app_log.info("Caching failed, querying database ....")
             try:
                 result = await database.fetch_all(query=query, values={"timeframe": timeframe, "id": _id})
             except asyncpg.exceptions.InvalidParameterValueError:

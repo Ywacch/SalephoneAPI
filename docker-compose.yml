@@ -30,6 +30,7 @@ services:
       - db_host=${db_host}
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
     depends_on:
       - db
       - redis

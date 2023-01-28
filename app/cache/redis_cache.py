@@ -52,7 +52,7 @@ class RedisCache:
             :id ) sub inner join (select  item_id, title, date_added, 
             canadian_price_base as price from listings) as converted_listings on 
             converted_listings.item_id=sub.item_id AND converted_listings.date_added=sub.date_added group by 
-            datetime, sub.phone_name order by datetime;"""
+            datetime, brand, series, model, storage_size, sub.phone_name order by datetime;"""
 
             result = await db_conn.fetch_all(query=query, values={"id": phone['phone_id']})
             await self.set(phone['phone_id'], result)

@@ -114,7 +114,7 @@ async def price_history(_id: str, timeframe: str = "day"):
             :id ) sub inner join (select  item_id, title, date_added, 
             canadian_price_base as price from listings) as converted_listings on 
             converted_listings.item_id=sub.item_id AND converted_listings.date_added=sub.date_added group by 
-            datetime, sub.phone_name order by datetime;"""
+            datetime, brand, series, model, storage_size, sub.phone_name order by datetime;"""
 
     # Try to get the data from the cache, if it's not there look in the database
     try:

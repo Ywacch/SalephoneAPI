@@ -107,7 +107,8 @@ async def phone_id(_id: str, detailed: Union[bool, None] = None):
 @app.get("/phones/{_id}/price_history")
 async def price_history(_id: str, timeframe: str = "day"):
     result = []
-    query = f"""select sub.phone_name,  date_trunc(:timeframe, converted_listings.date_added)as datetime, 
+    query = f"""select sub.phone_name,  date_trunc(:timeframe, converted_listings.date_added)as datetime, brand, series,
+            model, storage_size,
             round(avg(converted_listings.price)::decimal, 1 ) as average from (select * from phonelistings inner join 
             smartphones on smartphones.phone_id=phonelistings.phone_id where smartphones.phone_id = 
             :id ) sub inner join (select  item_id, title, date_added, 

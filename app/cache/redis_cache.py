@@ -45,7 +45,8 @@ class RedisCache:
         await self.set('phone_ids', [phone['phone_id'] for phone in phones])
 
         for phone in jsonable_encoder(phones):
-            query = f"""select sub.phone_name,  date_trunc('day', converted_listings.date_added)as datetime, 
+            query = f"""select sub.phone_name,  date_trunc('day', converted_listings.date_added)as datetime, brand, series,
+            model, storage_size,
             round(avg(converted_listings.price)::decimal, 1 ) as average from (select * from phonelistings inner join 
             smartphones on smartphones.phone_id=phonelistings.phone_id where smartphones.phone_id = 
             :id ) sub inner join (select  item_id, title, date_added, 

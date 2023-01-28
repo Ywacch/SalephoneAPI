@@ -117,7 +117,8 @@ async def price_history(_id: str, timeframe: str = "day"):
 
     # Try to get the data from the cache, if it's not there look in the database
     try:
-        result = await app.redis.get(_id)
+        if timeframe == 'day':  # only the daily frequency is cached
+            result = await app.redis.get(_id)
     except Exception as e:
         fastapi_log.error(e)
     else:

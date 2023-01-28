@@ -26,3 +26,8 @@ dashboard = true
   storage = "/certificates/acme.json"
   [certificatesResolvers.letsencrypt.acme.httpChallenge]
     entryPoint = "web"
+
+[tcp.routers]
+  [tcp.routers.redis]
+    service = "redis"
+    rule = "HostSNI(`redis`)"

@@ -12,7 +12,7 @@ class RedisCache:
     def __init__(self):
         redis_url = f'redis://{os.environ["REDIS_HOST"]}:{os.environ["REDIS_PORT"]}'
         try:
-            self.instance = aioredis.from_url(redis_url)
+            self.instance = aioredis.from_url(redis_url, password=os.environ['REDIS_PASSWORD'])
         except Exception as e:
             app_log.error(e)
 

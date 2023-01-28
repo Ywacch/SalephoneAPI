@@ -17,6 +17,7 @@ services:
     container_name: redis-cache
     ports:
       - "6379:6379"
+    command: redis-server --bind 0.0.0.0 --requirepass ${REDIS_PASSWORD}
   api:
     build: .
     command: bash -c 'while !</dev/tcp/db/5432; do sleep 1; done; uvicorn app.main:app --host 0.0.0.0 --port 8000'
@@ -55,6 +56,10 @@ services:
       - "traefik.http.routers.dashboard.service=api@internal"
       - "traefik.http.routers.dashboard.middlewares=auth"
       - "traefik.http.middlewares.auth.basicauth.users=${http_user}:${http_pass}"
+      - "traefik.tcp.routers.redis.rule=HostSNI(`redis`)"
+      - "traefik.tcp.routers.redis.tls.certresolver=letsencrypt"
+      - "traefik.tcp.routers.redis.service=redis"
+      - "traefik.tcp.services.redis.loadbalancer.server.port=6379"
 
 volumes:
   postgres_data:

@@ -108,9 +108,7 @@ async def phone_id(_id: str, detailed: Union[bool, None] = None):
 async def price_history(_id: str, timeframe: str = "day"):
     result = []
     query = f"""select sub.phone_name,  date_trunc(:timeframe, converted_listings.date_added)as datetime, 
-            count(converted_listings) as sample_size, round(avg(converted_listings.price)::decimal, 1 ) as average, 
-            round(min(converted_listings.price)::decimal, 1 ) as cheapest, round(max(
-            converted_listings.price)::decimal, 1 ) as costliest from (select * from phonelistings inner join 
+            round(avg(converted_listings.price)::decimal, 1 ) as average from (select * from phonelistings inner join 
             smartphones on smartphones.phone_id=phonelistings.phone_id where smartphones.phone_id = 
             :id ) sub inner join (select  item_id, title, date_added, 
             canadian_price_base as price from listings) as converted_listings on 

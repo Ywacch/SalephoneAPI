@@ -8,7 +8,7 @@ from app.log import fastapi_log, app_log
 
 from app.database.db import database
 from app.database.db import tables
-from app.cache.redis_cache import RedisCache
+#from app.cache.redis_cache import RedisCache
 
 
 app = FastAPI()
@@ -43,15 +43,15 @@ async def startup():
     :return:
     """
     await database.connect()
-    app.redis = RedisCache()
-    asyncio.create_task(app.redis.update_cache(database))
-    asyncio.create_task(start_scheduler())
+    #app.redis = RedisCache()
+    #asyncio.create_task(app.redis.update_cache(database))
+    #asyncio.create_task(start_scheduler())
 
 
 @app.on_event("shutdown")
 async def shutdown():
     await database.disconnect()
-    await app.redis.close_redis()
+    #await app.redis.close_redis()
 
 
 @app.get("/phones/")
@@ -74,7 +74,7 @@ async def all_phones(detailed: Union[bool, None] = None, brand: Union[str, None]
         phones = await database.fetch_all(query=query().filter(*filters))
     else:
         phones = await database.fetch_all(query=query().filter(*filters)
-                                          .with_only_columns([smartphones.c.phone_id, smartphones.c.phone_name]))
+                                          .with_only_columns(smartphones.c.phone_id, smartphones.c.phone_name))
     return phones
 
 
@@ -98,7 +98,7 @@ async def phone_id(_id: str, detailed: Union[bool, None] = None):
         phone = await database.fetch_one(query=smartphones.select().filter(smartphones.c.phone_id == _id))
     else:
         phone = await database.fetch_one(query=smartphones.select().filter(smartphones.c.phone_id == _id)
-                                         .with_only_columns([smartphones.c.phone_id, smartphones.c.phone_name]))
+                                         .with_only_columns(smartphones.c.phone_id, smartphones.c.phone_name))
     if not phone:
         raise HTTPException(status_code=404, detail="Item not found")
     return phone
@@ -119,13 +119,13 @@ async def price_history(_id: str, timeframe: str = "day"):
     # Try to get the data from the cache, if it's not there look in the database
     try:
         if timeframe == 'day':  # only the daily frequency is cached
-            result = await app.redis.get(_id)
+            result = None # await app.redis.get(_id)
     except Exception as e:
         fastapi_log.error(e)
     else:
         if not result:
             app_log.info("Caching failed, querying database ....")
-            try:
+            try: # TODO: add the data fetched from the database to the cache
                 result = await database.fetch_all(query=query, values={"timeframe": timeframe, "id": _id})
             except asyncpg.exceptions.InvalidParameterValueError:
                 error_message = f"timestamp '{timeframe}' is not a valid parameter"

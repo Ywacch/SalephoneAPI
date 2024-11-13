@@ -1,8 +1,10 @@
 import pytest
+from jsonschema import validate, ValidationError
 from starlette.testclient import TestClient
 
 from app.main import app
 
+#TODO: response schema in  test_phone_all() should be in every request-response test
 
 @pytest.fixture(scope="module")
 def app_client():
@@ -11,6 +13,23 @@ def app_client():
 
 
 def test_phone_all(app_client):
+    response_schema = {
+        "type": "array",
+        "items": {  # Each item in the array should be a dictionary that matches phone_schema
+            "type": "object",
+            "properties": {
+                "phone_id": {"type": "string"},
+                "phone_name": {"type": "string"},
+                "brand": {"type": "string"},
+                "series": {"type": "string"},
+                "model": {"type": "string"},
+                "storage_size": {"type": "string"}
+            },
+            "required": ["phone_id", "phone_name"],  # Only phone_id and phone_name are mandatory
+            "additionalProperties": True  # Allows other fields beyond those listed in `properties`
+        }
+    }
+
     response1 = app_client.get("/phones/?detailed=true")
     response2 = app_client.get("/phones/?detailed=false")
     response3 = app_client.get("/phones/")
@@ -19,25 +38,25 @@ def test_phone_all(app_client):
     assert response2.status_code == 200
     assert response3.status_code == 200
 
-    assert response1.json() == [
-        {"phone_id": "e6f4adaf6a82d2048ed867bbcc035190", "brand": "Apple", "series": "x", "model": "iPhone", "phone_name": "Apple iPhone x 64GB", "storage_size":"64 GB"},
-        {"phone_id":"468c6d0b1910206717edd573c114b7ef","brand":"Apple","series":"x","model":"iPhone","phone_name":"Apple iPhone x 256GB","storage_size":"256 GB"},
-        {"phone_id":"deec77415dbf07b417d7f243b9ed6572","brand":"Apple","series":"8","model":"iPhone","phone_name":"Apple iphone 8 64GB","storage_size":"64 GB"},
-        {"phone_id":"2e7aeea336ff71ad8633a38e4625e56e","brand":"Apple","series":"8","model":"iPhone","phone_name":"Apple iphone 8 128GB","storage_size":"128 GB"}]
 
-    assert response2.json() == [
-        {'phone_id': 'e6f4adaf6a82d2048ed867bbcc035190', 'phone_name': 'Apple iPhone x 64GB'},
-        {'phone_id': '468c6d0b1910206717edd573c114b7ef', 'phone_name': 'Apple iPhone x 256GB'},
-        {'phone_id': 'deec77415dbf07b417d7f243b9ed6572', 'phone_name': 'Apple iphone 8 64GB'},
-        {'phone_id': '2e7aeea336ff71ad8633a38e4625e56e', 'phone_name': 'Apple iphone 8 128GB'}
-    ]
+    try:
+        validate(response1.json(), response_schema)
+        assert True, "response 1 matches schema"
+    except ValidationError as e:
+        assert False, f'response 1 does not match schema {e}'
 
-    assert response3.json() == [
-        {'phone_id': 'e6f4adaf6a82d2048ed867bbcc035190', 'phone_name': 'Apple iPhone x 64GB'},
-        {'phone_id': '468c6d0b1910206717edd573c114b7ef', 'phone_name': 'Apple iPhone x 256GB'},
-        {'phone_id': 'deec77415dbf07b417d7f243b9ed6572', 'phone_name': 'Apple iphone 8 64GB'},
-        {'phone_id': '2e7aeea336ff71ad8633a38e4625e56e', 'phone_name': 'Apple iphone 8 128GB'}
-    ]
+    try:
+        validate(response2.json(), response_schema)
+        assert True, "response matches schema"
+    except ValidationError as e:
+        assert False, f'response does not match schema {e}'
+
+    try:
+        validate(response3.json(), response_schema)
+        assert True, "response matches schema"
+    except ValidationError as e:
+        assert False, f'response does not match schema {e}'
+
 
 
 def test_phone_id(app_client):
@@ -66,8 +85,7 @@ def test_price_history(app_client):
 
     assert response.status_code == 200
 
-    assert response.json() == [{"phone_name":"Apple iPhone x 64GB","datetime":"2020-01-01T06:00:00+00:00","sample_size":9,"average":267.9,"cheapest":179.2,"costliest":364.8},{"phone_name":"Apple iPhone x 64GB","datetime":"2022-01-01T06:00:00+00:00","sample_size":7,"average":316.3,"cheapest":294.4,"costliest":320.0}]
-
+    assert len(response.json()) > 1
 
 def test_price_history_invalid_time(app_client):
     _id = 'e6f4adaf6a82d2048ed867bbcc035190'

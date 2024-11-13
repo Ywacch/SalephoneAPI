@@ -104,6 +104,7 @@ celerybeat.pid
 # Environments
 .env
 .venv
+local.env
 env/
 venv/
 ENV/
@@ -129,3 +130,7 @@ dmypy.json
 .pyre/
 
 .idea/
+
+logs/
+/env2/
+/requirements2.txt
